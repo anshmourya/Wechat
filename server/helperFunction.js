@@ -10,8 +10,8 @@ const getCurrentTimeAndDate = () => {
 
 //function to upload the image image im the firebase and get the url 
 
-const uploadImage = async (imgDestination, name) => {
-    const destination = name + " " + getCurrentTimeAndDate() + ".jpeg"
+const uploadImage = async (imgDestination, postFileName) => {
+    const destination = postFileName + ".jpeg"
     console.log(destination);
     await bucket.upload(imgDestination, {
         destination: destination,
@@ -31,6 +31,27 @@ const uploadImage = async (imgDestination, name) => {
 
 }
 
+//delete post from the database
+const deletePost = async (userId, postId) => {
+    console.log(userId, postId);
+    try {
+        const deleteResponse = await user.doc(userId).collection("posts").doc(postId).delete()
+        const deleteImage = await bucket.file(`${postId}.jpeg`).delete()
+        if (deleteResponse && deleteImage) {
+            return {
+                message: "Successfully deleted the post",
+                postID: postId,
+                userID: userId
+            }
+        }
+
+    } catch (error) {
+        console.error(error)
+    }
+
+}
+
+
 //function to upload the image and related data to the firebase 
 const uploadImageDataInFirebase = async (postData, id) => {
     const response = await user.doc(id).collection("posts").doc(postData.id.toString()).set(postData)
@@ -38,4 +59,4 @@ const uploadImageDataInFirebase = async (postData, id) => {
 }
 
 
-module.exports = { uploadImage, uploadImageDataInFirebase, getCurrentTimeAndDate }
+module.exports = { uploadImage, uploadImageDataInFirebase, getCurrentTimeAndDate, deletePost }
